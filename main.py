@@ -86,19 +86,33 @@ def get_drive_service():
 
 def initialize_driver():
     """Create and configure Chrome driver instance"""
-    # chrome_options = webdriver.ChromeOptions()
-    service = ChromeService(ChromeDriverManager().install())
-    chrome_options = webdriver.Chrome(service=service, options=chrome_options)
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
+    # 1. Create the options object FIRST
+    chrome_options = webdriver.ChromeOptions()
     
-    
-    
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    # 2. Add arguments to the options object
+    chrome_options.add_argument('--headless') # Run without a visible browser window
+    chrome_options.add_argument('--no-sandbox') # Necessary for running as root/in containers like GitHub Actions
+    chrome_options.add_argument('--disable-dev-shm-usage') # Overcomes limited resource problems
+    chrome_options.add_argument('--window-size=1920x1080') # Specify window size if needed
+
+    print("Setting up Chrome Service using webdriver-manager...")
+    try:
+        # 3. Set up the service using webdriver-manager
+        service = ChromeService(ChromeDriverManager().install())
+        print("Chrome Service setup complete.")
+
+        print("Initializing WebDriver...")
+        # 4. Initialize the WebDriver, passing BOTH the service and options
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        print("WebDriver initialized successfully.")
+
+        # 5. Return the initialized driver instance
+        return driver
+
+    except Exception as e:
+        print(f"Error during WebDriver initialization: {e}")
+        # Consider how to handle errors, maybe return None or re-raise
+        raise # Re-raise the exception to stop execution and see the error clearly
 
 def get_bd_time():
     """Get current Bangladesh time (UTC+6)"""
