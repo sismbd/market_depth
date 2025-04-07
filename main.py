@@ -13,6 +13,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
 import openpyxl
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager # Make sure you're using the correct manager
 
 # Import Google Drive libraries
 from google.auth.transport.requests import Request
