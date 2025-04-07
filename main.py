@@ -90,28 +90,40 @@ def initialize_driver():
     chrome_options = webdriver.ChromeOptions()
     
     # 2. Add arguments to the options object
-    chrome_options.add_argument('--headless') # Run without a visible browser window
-    chrome_options.add_argument('--no-sandbox') # Necessary for running as root/in containers like GitHub Actions
-    chrome_options.add_argument('--disable-dev-shm-usage') # Overcomes limited resource problems
-    chrome_options.add_argument('--window-size=1920x1080') # Specify window size if needed
+    chrome_options.add_argument('--headless') 
+    chrome_options.add_argument('--no-sandbox') 
+    chrome_options.add_argument('--disable-dev-shm-usage') 
+    chrome_options.add_argument('--window-size=1920x1080') 
 
     print("Setting up Chrome Service using webdriver-manager...")
     try:
-        # 3. Set up the service using webdriver-manager
-        service = ChromeService(ChromeDriverManager().install())
+        # 3. Explicitly get the path from webdriver-manager
+        #    and print it for debugging.
+        driver_path = ChromeDriverManager().install()
+        print(f"--- DEBUG: webdriver-manager installed driver at: {driver_path} ---") 
+        
+        # Check if the path obtained looks suspicious (ends with NOTICES)
+        if 'THIRD_PARTY_NOTICES' in driver_path:
+            print("--- WARNING: webdriver-manager path seems incorrect! Check download/cache. ---")
+            # You might want to raise an error here or try to find the correct path manually if needed
+
+        # 4. Set up the service using the explicitly obtained path
+        service = ChromeService(executable_path=driver_path)
         print("Chrome Service setup complete.")
 
         print("Initializing WebDriver...")
-        # 4. Initialize the WebDriver, passing BOTH the service and options
+        # 5. Initialize the WebDriver, passing BOTH the service and options
         driver = webdriver.Chrome(service=service, options=chrome_options)
         print("WebDriver initialized successfully.")
 
-        # 5. Return the initialized driver instance
+        # 6. Return the initialized driver instance
         return driver
 
     except Exception as e:
         print(f"Error during WebDriver initialization: {e}")
-        # Consider how to handle errors, maybe return None or re-raise
+        # Print the path again in case of error during service start
+        if 'driver_path' in locals():
+             print(f"--- DEBUG: Driver path used during error: {driver_path} ---")
         raise # Re-raise the exception to stop execution and see the error clearly
 
 def get_bd_time():
