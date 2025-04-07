@@ -1,44 +1,56 @@
-name: DSE Market Depth Scraper
+name: Run Python Script Daily
 
 on:
   schedule:
-    # Run at 8:00 UTC (2:00 PM Bangladesh time)
-    - cron: '0 8 * * 1-5'
-    # Run every 10 minutes from 8:10 to 10:50 UTC (2:10 PM to 4:50 PM Bangladesh time)
-    - cron: '10,20,30,40,50 8-10 * * 1-5'
-  workflow_dispatch:  # Allow manual triggering
+    # Runs every day at 8:00 AM UTC (which is 2:00 PM in Dhaka, UTC+6)
+    # Format: minute hour day(month) month day(week)
+    - cron: '0 8 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
-  scrape:
-    runs-on: ubuntu-latest
-    
+  run-script:
+    # runs-on: ubuntu-latest # Use a standard Linux runner
+    runs-on: ubuntu-20.04
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
-      
+      uses: actions/checkout@v4 # Checks out your code
+
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
-        
-    - name: Install Chrome and dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgconf-2-4
-        sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt install -y ./google-chrome-stable_current_amd64.deb
-      
-    - name: Install Python dependencies
+        python-version: '3.x' # Specify your desired Python version (e.g., 3.9, 3.10)
+
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
-    - name: Create token file
-      run: |
-        echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
-        
-    - name: Run scraper
+
+    - name: Authenticate to Google Cloud (for Google Drive)
+      id: 'auth'
+      uses: 'google-github-actions/auth@v2' # Action to handle GCP authentication
+      with:
+        credentials_json: '${{ secrets.GDRIVE_SA_KEY }}' # Use the secret you created
+
+    # Option 1: If your script uses Application Default Credentials (ADC)
+    # Most modern Google Cloud libraries (like google-cloud-storage, google-api-python-client)
+    # automatically pick up credentials set up by the google-github-actions/auth action.
+    # You might not need a separate step if your script is written this way.
+
+    # Option 2: Explicitly set environment variable (if needed by your script/library)
+    # The 'google-github-actions/auth' action often sets GOOGLE_APPLICATION_CREDENTIALS automatically.
+    # Check its documentation if needed. If you need it explicitly:
+    # - name: Set GOOGLE_APPLICATION_CREDENTIALS environment variable
+    #   run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
+
+
+    - name: Run Python script
+      run: python your_script.py # Execute your script
       env:
-        DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-      run: python main.py
+        # You can pass other environment variables to your script if needed
+        # EXAMPLE_VAR: 'some_value'
+        # Make sure your Python script knows how to access environment variables if required
+        # (e.g., using os.environ.get('EXAMPLE_VAR'))
+        # The GOOGLE_APPLICATION_CREDENTIALS needed for Drive should be set by the auth step above.
+        PYTHONUNBUFFERED: 1 # Ensures logs appear in real-time in Actions output
