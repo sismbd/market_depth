@@ -52,7 +52,7 @@ jobs:
 
 
     - name: Run Python script
-      run: python your_script.py # Execute your script
+      run: market_depth.py # Execute your script
       env:
         # You can pass other environment variables to your script if needed
         # EXAMPLE_VAR: 'some_value'
