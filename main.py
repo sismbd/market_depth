@@ -17,6 +17,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager # Make sure you're using the correct manager
 
 
+
 # Import Google Drive libraries
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -86,6 +87,7 @@ def get_drive_service():
 def initialize_driver():
     """Create and configure Chrome driver instance"""
     # chrome_options = webdriver.ChromeOptions()
+    service = ChromeService(ChromeDriverManager().install())
     chrome_options = webdriver.Chrome(service=service, options=chrome_options)
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
