@@ -16,6 +16,7 @@ import openpyxl
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager # Make sure you're using the correct manager
 
+
 # Import Google Drive libraries
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -88,6 +89,8 @@ def initialize_driver():
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service)
     
     return webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
