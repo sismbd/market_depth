@@ -85,12 +85,13 @@ def get_drive_service():
 
 def initialize_driver():
     """Create and configure Chrome driver instance"""
-    chrome_options = webdriver.ChromeOptions()
+    # chrome_options = webdriver.ChromeOptions()
+    chrome_options = webdriver.Chrome(service=service)
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     
-    # driver = webdriver.Chrome(service=service)
+    
     
     return webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
