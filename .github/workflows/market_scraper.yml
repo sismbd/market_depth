@@ -30,6 +30,12 @@ jobs:
       with:
         python-version: '3.9'
         
+    - name: Clear webdriver-manager cache
+      run: |
+        echo "Clearing webdriver-manager cache..."
+        rm -rf /home/runner/.wdm/
+        echo "Cache cleared."
+        
     - name: Install Chrome and dependencies
       run: |
         sudo apt-get update
@@ -37,6 +43,7 @@ jobs:
         sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo apt install -y ./google-chrome-stable_current_amd64.deb
+        sudo apt-get install -y google-chrome-stable
       
     - name: Install Python dependencies
       run: |
