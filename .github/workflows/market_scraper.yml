@@ -79,3 +79,12 @@ jobs:
         ls -l
         echo "=== Excel file check ==="
         find . -name "Market_Depth_*.xlsx"
+
+      #Look for a section labeled "Artifacts" at the bottom of the page
+    - name: Save credential files as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: google-credentials
+        path: |
+          credentials.json
+          token.pickle
