@@ -82,7 +82,8 @@ jobs:
 
       #Look for a section labeled "Artifacts" at the bottom of the page
     - name: Save credential files as artifacts
-      uses: actions/upload-artifact@v2
+      # uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3  # Change from v2 to v3
       with:
         name: google-credentials
         path: |
