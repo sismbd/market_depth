@@ -70,3 +70,11 @@ jobs:
       env:
         DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
       run: python main.py
+      
+      # ADD DEBUG STEP HERE
+    - name: List files after save
+      run: |
+        echo "=== Current directory structure ==="
+        ls -l
+        echo "=== Excel file check ==="
+        find . -name "Market_Depth_*.xlsx"
