@@ -86,45 +86,48 @@ def get_drive_service():
 
 def initialize_driver():
     """Create and configure Chrome driver instance"""
-    # 1. Create the options object FIRST
     chrome_options = webdriver.ChromeOptions()
-    
-    # 2. Add arguments to the options object
-    chrome_options.add_argument('--headless') 
-    chrome_options.add_argument('--no-sandbox') 
-    chrome_options.add_argument('--disable-dev-shm-usage') 
-    chrome_options.add_argument('--window-size=1920x1080') 
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--window-size=1920x1080')
 
     print("Setting up Chrome Service using webdriver-manager...")
     try:
-        # 3. Explicitly get the path from webdriver-manager
-        #    and print it for debugging.
+        # Get the driver path using webdriver-manager
         driver_path = ChromeDriverManager().install()
-        print(f"--- DEBUG: webdriver-manager installed driver at: {driver_path} ---") 
-        
-        # Check if the path obtained looks suspicious (ends with NOTICES)
-        if 'THIRD_PARTY_NOTICES' in driver_path:
-            print("--- WARNING: webdriver-manager path seems incorrect! Check download/cache. ---")
-            # You might want to raise an error here or try to find the correct path manually if needed
+        print(f"--- DEBUG: Initial driver path from webdriver-manager: {driver_path} ---")
 
-        # 4. Set up the service using the explicitly obtained path
+        # Check if the path contains 'THIRD_PARTY_NOTICES' (incorrect file)
+        if 'THIRD_PARTY_NOTICES' in driver_path:
+            # Construct corrected path to chromedriver executable
+            corrected_path = os.path.join(os.path.dirname(driver_path), 'chromedriver')
+            print(f"--- DEBUG: Corrected driver path: {corrected_path} ---")
+            
+            if os.path.isfile(corrected_path):
+                driver_path = corrected_path
+                print("--- DEBUG: Using corrected chromedriver path ---")
+            else:
+                raise FileNotFoundError(f"Chromedriver not found at: {corrected_path}")
+
+        # Verify the final driver path
+        print(f"--- DEBUG: Final driver path: {driver_path} ---")
+        if not os.path.isfile(driver_path):
+            raise FileNotFoundError(f"Chromedriver executable not found at: {driver_path}")
+
+        # Set up Chrome Service
         service = ChromeService(executable_path=driver_path)
         print("Chrome Service setup complete.")
 
+        # Initialize WebDriver
         print("Initializing WebDriver...")
-        # 5. Initialize the WebDriver, passing BOTH the service and options
         driver = webdriver.Chrome(service=service, options=chrome_options)
         print("WebDriver initialized successfully.")
-
-        # 6. Return the initialized driver instance
         return driver
 
     except Exception as e:
         print(f"Error during WebDriver initialization: {e}")
-        # Print the path again in case of error during service start
-        if 'driver_path' in locals():
-             print(f"--- DEBUG: Driver path used during error: {driver_path} ---")
-        raise # Re-raise the exception to stop execution and see the error clearly
+        raise
 
 def get_bd_time():
     """Get current Bangladesh time (UTC+6)"""
