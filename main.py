@@ -94,39 +94,34 @@ def initialize_driver():
 
     print("Setting up Chrome Service using webdriver-manager...")
     try:
-        # Get the driver path using webdriver-manager
+        # Get driver path
         driver_path = ChromeDriverManager().install()
-        print(f"--- DEBUG: Initial driver path from webdriver-manager: {driver_path} ---")
+        print(f"--- DEBUG: Initial path: {driver_path} ---")
 
-        # Check if the path contains 'THIRD_PARTY_NOTICES' (incorrect file)
+        # Fix path if needed
         if 'THIRD_PARTY_NOTICES' in driver_path:
-            # Construct corrected path to chromedriver executable
             corrected_path = os.path.join(os.path.dirname(driver_path), 'chromedriver')
-            print(f"--- DEBUG: Corrected driver path: {corrected_path} ---")
-            
-            if os.path.isfile(corrected_path):
-                driver_path = corrected_path
-                print("--- DEBUG: Using corrected chromedriver path ---")
-            else:
-                raise FileNotFoundError(f"Chromedriver not found at: {corrected_path}")
+            print(f"--- DEBUG: Corrected path: {corrected_path} ---")
+            driver_path = corrected_path
 
-        # Verify the final driver path
-        print(f"--- DEBUG: Final driver path: {driver_path} ---")
+        # Verify file exists
         if not os.path.isfile(driver_path):
-            raise FileNotFoundError(f"Chromedriver executable not found at: {driver_path}")
+            raise FileNotFoundError(f"Chromedriver not found at: {driver_path}")
 
-        # Set up Chrome Service
+        # Set execute permissions (crucial fix)
+        os.chmod(driver_path, 0o755)  # This is the critical permission fix
+        print(f"--- DEBUG: Set permissions for: {driver_path} ---")
+
+        # Initialize service
         service = ChromeService(executable_path=driver_path)
         print("Chrome Service setup complete.")
 
-        # Initialize WebDriver
-        print("Initializing WebDriver...")
+        # Create driver
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        print("WebDriver initialized successfully.")
         return driver
 
     except Exception as e:
-        print(f"Error during WebDriver initialization: {e}")
+        print(f"WebDriver init error: {str(e)}")
         raise
 
 def get_bd_time():
