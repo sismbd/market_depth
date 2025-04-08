@@ -17,6 +17,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager # Make sure you're using the correct manager
 
 
+
 # Import Google Drive libraries
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -89,13 +90,39 @@ def initialize_driver():
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
-    
-    # driver = webdriver.Chrome(service=service)
-    
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    chrome_options.add_argument('--window-size=1920x1080')
+
+    print("Setting up Chrome Service using webdriver-manager...")
+    try:
+        # Get driver path
+        driver_path = ChromeDriverManager().install()
+        print(f"--- DEBUG: Initial path: {driver_path} ---")
+
+        # Fix path if needed
+        if 'THIRD_PARTY_NOTICES' in driver_path:
+            corrected_path = os.path.join(os.path.dirname(driver_path), 'chromedriver')
+            print(f"--- DEBUG: Corrected path: {corrected_path} ---")
+            driver_path = corrected_path
+
+        # Verify file exists
+        if not os.path.isfile(driver_path):
+            raise FileNotFoundError(f"Chromedriver not found at: {driver_path}")
+
+        # Set execute permissions (crucial fix)
+        os.chmod(driver_path, 0o755)  # This is the critical permission fix
+        print(f"--- DEBUG: Set permissions for: {driver_path} ---")
+
+        # Initialize service
+        service = ChromeService(executable_path=driver_path)
+        print("Chrome Service setup complete.")
+
+        # Create driver
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        return driver
+
+    except Exception as e:
+        print(f"WebDriver init error: {str(e)}")
+        raise
 
 def get_bd_time():
     """Get current Bangladesh time (UTC+6)"""
