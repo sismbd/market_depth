@@ -62,28 +62,56 @@ def get_drive_service():
     """Authenticate and create Drive service"""
     creds = None
     
-    # Check if we have token.json with stored credentials
+    print("=== Checking for existing token ===")
     if os.path.exists(TOKEN_FILE):
+        print(f"Found token file at: {os.path.abspath(TOKEN_FILE)}")
         with open(TOKEN_FILE, 'r') as token:
             creds = Credentials.from_authorized_user_info(json.load(token), SCOPES)
-    
-    # If credentials don't exist or are invalid, get new ones
+        print(f"Token loaded. Expired: {creds.expired if creds else 'No credentials'} Valid: {creds.valid if creds else False}")
+    else:
+        print("No existing token file found")
+
     if not creds or not creds.valid:
+        print("=== Handling credentials ===")
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            print("Refreshing expired credentials...")
+            try:
+                creds.refresh(Request())
+                print("Credentials refreshed successfully")
+            except Exception as refresh_error:
+                print(f"Error refreshing credentials: {refresh_error}")
         else:
-            # Create credentials from environment variable
-            credentials_info = json.loads(os.environ.get('CREDENTIALS_JSON'))
-            flow = InstalledAppFlow.from_client_config(credentials_info, SCOPES)
-            creds = flow.run_local_server(port=0)
-        
-        # Save the credentials for future runs
+            print("Creating new credentials...")
+            try:
+                credentials_info = json.loads(os.environ.get('CREDENTIALS_JSON'))
+                print("Environment credentials loaded successfully")
+                flow = InstalledAppFlow.from_client_config(credentials_info, SCOPES)
+                print("Starting local server for authentication...")
+                creds = flow.run_local_server(port=0)
+                print("Authentication flow completed successfully")
+            except Exception as auth_error:
+                print(f"Authentication error: {auth_error}")
+                raise
+
+        print("Saving credentials...")
         with open(TOKEN_FILE, 'w') as token:
             token.write(creds.to_json())
-    
-    # Build the Drive service
-    return build('drive', 'v3', credentials=creds)
+        print(f"Token saved to: {os.path.abspath(TOKEN_FILE)}")
 
+    print("=== Final credentials status ===")
+    print(f"Valid: {creds.valid}")
+    print(f"Expired: {creds.expired}")
+    print(f"Scopes: {creds.scopes if creds else 'No scopes'}")
+    
+    print("Building Drive service...")
+    try:
+        service = build('drive', 'v3', credentials=creds)
+        print("Drive service created successfully")
+        return service
+    except Exception as build_error:
+        print(f"Error building Drive service: {build_error}")
+        raise
+        
 def initialize_driver():
     """Create and configure Chrome driver instance"""
     chrome_options = webdriver.ChromeOptions()
