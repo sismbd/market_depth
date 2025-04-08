@@ -24,6 +24,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import json
+import os
 
 # Configuration constants
 URLS = {
@@ -58,60 +62,56 @@ CREDENTIALS_FILE = 'credentials.json'
 TOKEN_FILE = 'token.json'
 DRIVE_FOLDER_ID = os.environ.get('DRIVE_FOLDER_ID')
 
+
+
+
 def get_drive_service():
-    """Authenticate and create Drive service"""
-    creds = None
-    
-    print("=== Checking for existing token ===")
-    if os.path.exists(TOKEN_FILE):
-        print(f"Found token file at: {os.path.abspath(TOKEN_FILE)}")
-        with open(TOKEN_FILE, 'r') as token:
-            creds = Credentials.from_authorized_user_info(json.load(token), SCOPES)
-        print(f"Token loaded. Expired: {creds.expired if creds else 'No credentials'} Valid: {creds.valid if creds else False}")
-    else:
-        print("No existing token file found")
-
-    if not creds or not creds.valid:
-        print("=== Handling credentials ===")
-        if creds and creds.expired and creds.refresh_token:
-            print("Refreshing expired credentials...")
-            try:
-                creds.refresh(Request())
-                print("Credentials refreshed successfully")
-            except Exception as refresh_error:
-                print(f"Error refreshing credentials: {refresh_error}")
-        else:
-            print("Creating new credentials...")
-            try:
-                credentials_info = json.loads(os.environ.get('CREDENTIALS_JSON'))
-                print("Environment credentials loaded successfully")
-                flow = InstalledAppFlow.from_client_config(credentials_info, SCOPES)
-                print("Starting local server for authentication...")
-                creds = flow.run_local_server(port=0)
-                print("Authentication flow completed successfully")
-            except Exception as auth_error:
-                print(f"Authentication error: {auth_error}")
-                raise
-
-        print("Saving credentials...")
-        with open(TOKEN_FILE, 'w') as token:
-            token.write(creds.to_json())
-        print(f"Token saved to: {os.path.abspath(TOKEN_FILE)}")
-
-    print("=== Final credentials status ===")
-    print(f"Valid: {creds.valid}")
-    print(f"Expired: {creds.expired}")
-    print(f"Scopes: {creds.scopes if creds else 'No scopes'}")
-    
-    print("Building Drive service...")
+    """Authenticate using service account credentials"""
     try:
-        service = build('drive', 'v3', credentials=creds)
-        print("Drive service created successfully")
-        return service
-    except Exception as build_error:
-        print(f"Error building Drive service: {build_error}")
-        raise
+        print("=== Initializing Google Drive Service ===")
         
+        # 1. Get credentials from environment variable
+        credentials_json = os.environ.get('CREDENTIALS_JSON')
+        if not credentials_json:
+            raise ValueError("CREDENTIALS_JSON environment variable not set")
+            
+        print("Loading service account credentials...")
+        credentials_info = json.loads(credentials_json)
+        
+        # 2. Create credentials with correct scopes
+        creds = service_account.Credentials.from_service_account_info(
+            credentials_info,
+            scopes=SCOPES
+        )
+        
+        print("Service account credentials created successfully")
+        print(f"Service account email: {creds.service_account_email}")
+        
+        # 3. Build and verify the Drive service
+        print("Building Drive service...")
+        service = build('drive', 'v3', credentials=creds)
+        
+        # Quick test to verify connection
+        print("Testing Drive connection...")
+        about = service.about().get(fields="user").execute()
+        print(f"Drive connection successful! User: {about['user']}")
+        
+        return service
+        
+    except json.JSONDecodeError as e:
+        print(f"Error parsing CREDENTIALS_JSON: {str(e)}")
+        raise
+    except ValueError as e:
+        print(f"Authentication error: {str(e)}")
+        raise
+    except Exception as e:
+        print(f"Unexpected error initializing Drive service: {str(e)}")
+        raise
+
+
+
+
+
 def initialize_driver():
     """Create and configure Chrome driver instance"""
     chrome_options = webdriver.ChromeOptions()
@@ -152,9 +152,17 @@ def initialize_driver():
         print(f"WebDriver init error: {str(e)}")
         raise
 
+
+
+
+
 def get_bd_time():
     """Get current Bangladesh time (UTC+6)"""
     return datetime.utcnow() + timedelta(hours=6)
+
+
+
+
 
 def setup_workbook():
     """Initialize or load Excel workbook"""
@@ -175,6 +183,10 @@ def setup_workbook():
     ]
     sheet.append(headers)
     return workbook, sheet, filename
+
+
+
+
 
 def upload_to_drive(filename, drive_service):
     """Upload file to Google Drive"""
@@ -197,6 +209,10 @@ def upload_to_drive(filename, drive_service):
     
     print(f"File uploaded to Drive with ID: {file.get('id')}")
     return file.get('id')
+
+
+
+
 
 def scrape_data(driver, driver_prices, sheet):
     """Main scraping logic"""
@@ -280,6 +296,10 @@ def scrape_data(driver, driver_prices, sheet):
 
     except Exception as e:
         print(f"Major error: {str(e)}")
+
+
+
+
 
 def main():
     """Main execution function"""
