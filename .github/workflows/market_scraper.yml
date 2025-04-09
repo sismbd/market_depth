@@ -78,7 +78,7 @@ jobs:
         echo "=== Current directory structure ==="
         ls -l
         echo "=== Excel file check ==="
-        find . -name "Market_Depth_*.xlsx"
+        find . -name "Market_1_Depth_*.xlsx"
 
       #Look for a section labeled "Artifacts" at the bottom of the page
     - name: Save credential files as artifacts
