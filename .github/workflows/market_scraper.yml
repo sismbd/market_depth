@@ -66,9 +66,9 @@ jobs:
       run: |
         echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
 
-# #  Python script to handle the authentication and generate token.pickle.
-#     - name: Generate token.pickle
-#       run: python generate_token.py
+#  Python script to handle the authentication and generate token.pickle.
+    - name: Generate token.pickle
+      run: python generate_token.py
       
 # #You will use the drive folder id in later python scripts, that interact with the google drive api.
 #     - name: Your drive actions
