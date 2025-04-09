@@ -4,7 +4,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # Replace with the scopes your API requires
-SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+# SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+SCOPES = ['https://www.googleapis.com/auth/drive.file'] #See, edit, create, and delete only the specific Google Drive files you use with this app
 
 def generate_token():
     creds = None
