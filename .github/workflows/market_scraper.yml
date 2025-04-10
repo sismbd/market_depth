@@ -18,7 +18,7 @@ name: DSE Market Depth Scraper
 on:
   schedule:
     # Run at 10, 20, and 30 minutes past 8 AM UTC (2:10, 2:20, and 2:30 PM Bangladesh time) for Sunday to Thursday
-    - cron: '10,20,30 8 * * 0-4'
+    - cron: '0,10,20,27 8 * * 0-4'
   workflow_dispatch:  # Allow manual triggering
   
 permissions: # Top level key, placed correctly
