@@ -70,6 +70,7 @@ def get_drive_service():
     try:
         # Get service account credentials from environment variable
         service_account_info = json.loads(os.environ.get('SERVICE_ACCOUNT_KEY'))
+        print(f"Service account keys present: {', '.join(service_account_info.keys())}")
         
         # Create credentials from service account
         creds = service_account.Credentials.from_service_account_info(
