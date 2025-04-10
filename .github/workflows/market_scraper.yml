@@ -90,7 +90,7 @@ jobs:
       run: |
         echo "Run scraper"
         echo "$(date -u) UTC"
-        echo "$(date '+%Y-%m-%d %H:%M:%S %Z' --date='$(date -u) + 6 hours') Bangladesh Time"
+        echo "echo "$(date -u --date='6 hours') Bangladesh Time"
         python main.py
       
       # ADD DEBUG STEP HERE
