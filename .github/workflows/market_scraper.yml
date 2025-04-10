@@ -66,13 +66,6 @@ jobs:
       run: |
         echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
 
-# #  Python script to handle the authentication and generate token.pickle.
-#     - name: Generate token.pickle
-#       run: python generate_token.py
-      
-# #You will use the drive folder id in later python scripts, that interact with the google drive api.
-#     - name: Your drive actions
-#       run: python drive_actions.py
         
           #Look for a section labeled "Artifacts" at the bottom of the page
     - name: Save credential files as artifacts
@@ -98,6 +91,6 @@ jobs:
         echo "=== Current directory structure ==="
         ls -l
         echo "=== Excel file check ==="
-        find . -name "Market_1_Depth_*.xlsx"
+        find . -name "Market_Depth_*.xlsx"
 
 
