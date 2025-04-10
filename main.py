@@ -145,7 +145,7 @@ def get_bd_time():
 def setup_workbook():
     """Initialize or load Excel workbook"""
     date_str = get_bd_time().strftime('%d.%m.%Y')
-    filename = f'Market_1_Depth_{date_str}.xlsx'
+    filename = f'Market_Depth_Auto_{date_str}.xlsx'
     
     workbook = openpyxl.Workbook()
     sheet = workbook.active
