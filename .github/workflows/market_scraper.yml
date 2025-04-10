@@ -99,6 +99,6 @@ jobs:
         echo "=== Current directory structure ==="
         ls -l
         echo "=== Excel file check ==="
-        find . -name "Market_1_Depth_*.xlsx"
+        find . -name "Market_Depth_Auto_*.xlsx"
 
 
