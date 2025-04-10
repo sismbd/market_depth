@@ -12,11 +12,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
-import openpyxl
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager # Make sure you're using the correct manager
-
-
+import io
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
+import openpyxl
 
 # Import Google Drive libraries
 from google.auth.transport.requests import Request
@@ -167,27 +167,74 @@ def setup_workbook():
 
 
 def upload_to_drive(filename, drive_service):
-    """Upload file to Google Drive"""
-    file_metadata = {
-        'name': os.path.basename(filename),
-        'parents': [DRIVE_FOLDER_ID]
-    }
-    
-    media = MediaFileUpload(
-        filename,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        resumable=True
-    )
-    
-    file = drive_service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id'
-    ).execute()
-    
-    print(f"File uploaded to Drive with ID: {file.get('id')}")
-    return file.get('id')
+    """Upload or append data to an existing Google Drive file."""
 
+    file_name = os.path.basename(filename)
+    query = f"name='{file_name}' and '{DRIVE_FOLDER_ID}' in parents and trashed=false"
+
+    results = drive_service.files().list(q=query).execute()
+    items = results.get('files', [])
+
+    if items:
+        # File exists, append data
+        file_id = items[0].get('id')
+        print(f"File '{file_name}' found with ID: {file_id}. Appending data.")
+
+        # Download existing file
+        request = drive_service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+
+        # Load existing workbook
+        existing_workbook = openpyxl.load_workbook(io.BytesIO(fh.getvalue()))
+        existing_sheet = existing_workbook.active
+
+        # Load new data
+        new_workbook = openpyxl.load_workbook(filename)
+        new_sheet = new_workbook.active
+
+        # Append new data to existing sheet
+        for row in new_sheet.iter_rows(min_row=2):  # Start from row 2 (skip header)
+            values = [cell.value for cell in row]
+            existing_sheet.append(values)
+
+        # Upload updated file
+        buffer = io.BytesIO()
+        existing_workbook.save(buffer)
+        buffer.seek(0)
+
+        media = MediaIoBaseUpload(buffer, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', resumable=True)
+        updated_file = drive_service.files().update(fileId=file_id, media_body=media).execute()
+
+        print(f"Data appended to '{file_name}' with ID: {file_id}")
+        return file_id
+
+    else:
+        # File does not exist, create new file
+        print(f"File '{file_name}' not found. Creating new file.")
+
+        file_metadata = {
+            'name': file_name,
+            'parents': [DRIVE_FOLDER_ID]
+        }
+
+        media = MediaFileUpload(
+            filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            resumable=True
+        )
+
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
+
+        print(f"File uploaded to Drive with ID: {file.get('id')}")
+        return file.get('id')
 
 
 
