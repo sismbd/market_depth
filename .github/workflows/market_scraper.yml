@@ -86,8 +86,10 @@ jobs:
           
     - name: Run scraper
       env:
+        # DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+        # CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-        CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
       run: python main.py
       
       # ADD DEBUG STEP HERE
