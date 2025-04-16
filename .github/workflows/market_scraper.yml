@@ -83,6 +83,13 @@ jobs:
         # Download and install Chrome directly
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+        # Download the package from the older release
+        wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gconf/libgconf-2-4_3.2.6-7ubuntu2_amd64.deb
+
+        # Install the package and handle dependencies
+        sudo apt install ./libgconf-2-4_3.2.6-7ubuntu2_amd64.deb
+
+
 
         
     # - name: Install Browser Dependencies
