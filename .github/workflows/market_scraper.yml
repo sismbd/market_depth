@@ -53,15 +53,39 @@ jobs:
         rm -rf /home/runner/.wdm/
         echo "Cache cleared."
         
-    - name: Install Chrome and dependencies
+    # - name: Install Chrome and dependencies
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y chromium-browser
+    #     sudo apt-get install -y libgconf-2-4
+    #     sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4
+    #     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    #     sudo apt install -y ./google-chrome-stable_current_amd64.deb
+    #     sudo apt-get install -y google-chrome-stable
+        
+    - name: Install Browser Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y chromium-browser
-        sudo apt-get install -y libgconf-2-4
-        sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt install -y ./google-chrome-stable_current_amd64.deb
-        sudo apt-get install -y google-chrome-stable
+        # Install required dependencies
+        sudo apt-get install -y \
+            libnss3 \
+            libnspr4 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2
+        # Install Chromium via snap (works on Ubuntu 24.04)
+        sudo snap install chromium --classic
+
+
+        
       
     - name: Install Python dependencies
       run: |
