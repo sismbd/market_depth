@@ -29,8 +29,8 @@ permissions: # Top level key, placed correctly
   
 jobs:
   scrape:
-    # runs-on: ubuntu-latest
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    # runs-on: ubuntu-20.04
     
     steps:
     - name: Checkout repository
